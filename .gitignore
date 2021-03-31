@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+Chemical Composion of Ceramic.csv
+*.csv
