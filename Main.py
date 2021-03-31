@@ -25,16 +25,16 @@ if __name__ == "__main__":
     ridgeB = RidgeRegression(subsets[1][0], subsets[1][1], args.ridgeLamda)
     ridgeC = RidgeRegression(subsets[2][0], subsets[2][1], args.ridgeLamda)
     plotFigrueOfRegressionCoefficients(
-        ridgeA.w, ridgeB.w, ridgeC.w, titleAddition="with lamda = 1")
+        ridgeA.w, ridgeB.w, ridgeC.w, titleAddition="with lamda = "+str(args.ridgeLamda))
     # lamda2
     ridgeA = RidgeRegression(subsets[0][0], subsets[0][1], args.ridgeLamda2)
     ridgeB = RidgeRegression(subsets[1][0], subsets[1][1], args.ridgeLamda2)
     ridgeC = RidgeRegression(subsets[2][0], subsets[2][1], args.ridgeLamda2)
     plotFigrueOfRegressionCoefficients(
-        ridgeA.w, ridgeB.w, ridgeC.w, titleAddition="with lamda = 1e-2")
+        ridgeA.w, ridgeB.w, ridgeC.w, titleAddition="with lamda = "+str(args.ridgeLamda2))
     # lamda3
     ridgeA = RidgeRegression(subsets[0][0], subsets[0][1], args.ridgeLamda3)
     ridgeB = RidgeRegression(subsets[1][0], subsets[1][1], args.ridgeLamda3)
     ridgeC = RidgeRegression(subsets[2][0], subsets[2][1], args.ridgeLamda3)
     plotFigrueOfRegressionCoefficients(
-        ridgeA.w, ridgeB.w, ridgeC.w, titleAddition="with lamda = 1e-10")
+        ridgeA.w, ridgeB.w, ridgeC.w, titleAddition="with lamda = "+str(args.ridgeLamda3))

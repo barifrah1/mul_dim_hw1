@@ -18,7 +18,11 @@ class Regression():
 
 def plotFigrueOfRegressionCoefficients(wA, wB, wC, titleAddition=""):
     x = range(2, 24)
-
+    distA_B = np.linalg.norm(wA-wB)
+    distA_C = np.linalg.norm(wA-wC)
+    distB_C = np.linalg.norm(wB-wC)
+    print(
+        f"The distance between wA and wB is {distA_B}\n The distance between wA and wC is {distA_C}\n The distance between wB and wC is {distB_C}\n")
     plt.plot(x, wA[1:], color='red', linestyle='--')
     plt.plot(x, wB[1:], color='blue', linestyle='--')
     plt.plot(x, wC[1:], color='green', linestyle='--')
