@@ -15,3 +15,6 @@ class Args():
         self.ridgeLamda = RIDGE_LAMBDA
         self.ridgeLamda2 = RIDGE_LAMBDA2
         self.ridgeLamda3 = RIDGE_LAMBDA3
+        self.testSize = TEST_SIZE
+        self.lassoLamdas = [1e-8, 1e-5, 1e-4,
+                            1e-3, 1e-2, 1e-1, 1, 5, 10, 100]

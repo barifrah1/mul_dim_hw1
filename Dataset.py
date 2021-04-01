@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import random as random
+from sklearn.model_selection import train_test_split
 from Consts import SUBSET_SIZE, NUM_OF_SUBSETS
 
 
@@ -29,6 +30,8 @@ class Dataset():
         self.X = np.concatenate((self.X, self.addedColumns), axis=1)
         # create 3 subsets of the data
         self.subsets = self.createSubsets(NUM_OF_SUBSETS)
+        # split for train and test - lasso
+        self.splitTrainAndTest(testSize=keywords["testSize"])
 
     def createSubsets(self, numOfSubsets):
         subsets = []
@@ -39,3 +42,7 @@ class Dataset():
                             self.y[randomIndices]))
         print(subsets[1][0].shape)
         return subsets
+
+    def splitTrainAndTest(self, testSize=0.2):
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+            self.X, self.y, test_size=testSize, random_state=42)
