@@ -56,10 +56,21 @@ if __name__ == "__main__":
         data.target, columns=['target'])], axis=1)
 
     # Plot the 2d PC's
+    pc1 = np.array([np.linspace(0, 2, num=10)*0, np.linspace(0, 2, num=10)]).T
+    pc2 = np.array([np.linspace(0, 2, num=10)*1,
+                    np.linspace(0, 2, num=10)*0]).T
     plt.figure(figsize=(6, 6))
-    sb.scatterplot(data=principal_df, x='PC1', y='PC2',
-                   hue='target', s=60, palette='icefire')
-    # plt.show()
+    plt.scatter(principal_df["PC1"].to_numpy(), principal_df["PC2"].to_numpy(),
+                c=principal_df["target"].to_numpy(), cmap='plasma')
+    plt.legend()
+    plt.scatter(pc1[:, 0], pc1[:, 1],
+                color='orange', marker='o')
+    plt.scatter(pc2[:, 0], pc2[:, 1],
+                color='red', marker='o')
+    plt.title('2d PCS with labels')
+    plt.xlabel('PC1')
+    plt.ylabel('PC2')
+    plt.show()
 
     # PCA reconstruction=PC scores⋅Eigenvectors.T+Mean
     reconstructed_X = (X_projected@eigenvectors.T)*Std_col + Mean_col
@@ -69,13 +80,28 @@ if __name__ == "__main__":
     ax = fig.add_subplot(111, projection='3d')
     ax.view_init(15, -60)
 
-    recon_class = reconstructed_X
-    original_class = data.data
+    """recon_class = reconstructed_X
+    original_class = data.data"""
+    original_class = X_normalized
+    recon_class = X_projected@eigenvectors.T
     ax.scatter(recon_class[:, 4], recon_class[:, 5], recon_class[:, 6],
-               color='red', alpha=0.6, label='reconstructed data')
+               color='purple', alpha=0.6, label='reconstructed data')
     ax.scatter(original_class[:, 4], original_class[:, 5],
-               original_class[:, 6], color='green', alpha=0.6, label='Original data')
-
+               original_class[:, 6], color='pink', alpha=0.6, label='Original data')
+    # plot pcs directions
+    t = np.linspace(0, 2, num=100)
+    ex, ey, ez = t*eigenvectors[3, 0], t * \
+        eigenvectors[4, 0],  t*eigenvectors[5, 0]
+    ax.scatter(ex, ey,
+               ez, color='blue', alpha=0.6, label='ev1')
+    ex, ey, ez = t*eigenvectors[3, 1], t * \
+        eigenvectors[4, 1],  t*eigenvectors[5, 1]
+    ax.scatter(ex, ey,
+               ez, color='yellow', alpha=0.6, label='ev2')
+    ex, ey, ez = t*eigenvectors[3, 2], t * \
+        eigenvectors[4, 2],  t*eigenvectors[5, 2]
+    ax.scatter(ex, ey,
+               ez, color='green', alpha=0.6, label='ev3')
     # chart
     plt.title("3 columns of original and reconstructed data of Wine Quality")
     ax.set_xlabel('Col#4')
