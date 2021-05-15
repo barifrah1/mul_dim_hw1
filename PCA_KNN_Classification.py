@@ -126,15 +126,13 @@ if __name__ == "__main__":
     # Project the validation set into the top d PCs
     X_val_normalized = (X_val-Mean_col)/Std_col
     # Get the new projected data  pcaData = normalizedData * projectionVectors
-    X_val_projected = np.dot(max_d_eigenvectors.transpose(
-    ), X_val_normalized.transpose()).transpose()
+    X_val_projected = np.dot(X_val_normalized, max_d_eigenvectors)
 
+    #model = KNeighborsClassifier(n_neighbors=3)
+    ###
     model = KNeighborsClassifier(n_neighbors=3)
-    # StratifiedKFold CV is being done
-    scores = cross_val_score(
-        model, X_val_projected, y_val, scoring="accuracy", cv=5)
-    # we'll store the average value of accuracy calculated over all the 5 CV sets
-    accuracy_val = scores.mean()
+    model.fit(max_d_X_projected,y_train_test)
+    val_acc = model.score(X_val_projected,y_val)
 
     # Plot the train and the validation toghether
     # Plot 3d graph for PC1, PC2 & PC3
