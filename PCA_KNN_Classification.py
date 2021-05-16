@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error
 from math import sqrt
 from sklearn.metrics import r2_score
-
+from sklearn.decomposition import PCA
 
 if __name__ == "__main__":
     # Use pandas excel reader
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     models = []
     # Split the data into 10000 train+test & validation of 3611
     X_train_test, X_val, y_train_test, y_val = train_test_split(
-        X, Y, train_size=0.7347, random_state=0)  # returns 10000 tuples for train+test and the rest is validation
+        X, Y, train_size=0.7347)  # , random_state=0 returns 10000 tuples for train+test and the rest is validation
     for i in np.arange(1, 16):
         Mean_col, Std_col, X_normalized, eigenvalues, eigenvectors, X_projected = myPca(
             X_train_test.values, i)
@@ -51,101 +51,50 @@ if __name__ == "__main__":
         # StratifiedKFold CV is being done
         results = cross_validate(model, X_projected, y_train_test, scoring="accuracy",
                                  cv=5, return_train_score=True, return_estimator=True)
-        """scores = cross_val_score(
-            model, X_projected, y_train_test, scoring="accuracy", cv=5)"""
         # we'll store the average value of accuracy calculated over all the 5 CV sets
-        accuracy.append(scores.mean())
+        best_model = np.argmax(results['test_score'])
+        accuracy.append(results['test_score'].mean())
+        models.append(results['estimator'][best_model])
 
     plt.figure(figsize=(12, 3))
     accuracy = np.array(accuracy)
     plt.plot(np.arange(1, 16), accuracy)
     plt.xlabel("num of PC's")
     plt.ylabel("accuracy")
+    plt.title("accuracy of KNN model vs num of PC")
     plt.xticks(np.arange(1, 16))
     plt.legend()
     plt.show()
-
+    # get d where accuracy is the best
     max_d_accuracy = np.argmax(accuracy)
+    num_of_pcs = max_d_accuracy + 1
 
     max_d_Mean_col, max_d_Std_col, max_d_X_normalized, max_d_eigenvalues, max_d_eigenvectors, max_d_X_projected = myPca(
-        X_train_test.values, max_d_accuracy+1)
+        X_train_test.values, num_of_pcs)
 
+    # model with max_d pca components
+    model = models[max_d_accuracy]
     # To show that these eigenvectors are orthogonal, we will compute their dot product to show that!
     np.dot(max_d_eigenvectors[:, 0], max_d_eigenvectors[:, 1])
 
-    if max_d_accuracy > 3:
-        print(
-            f'd equals {max_d_accuracy}, plotting the projected data to the first 3 PCs')
-        # Creating a Pandas DataFrame of reduced Dataset
-        principal_df = pd.DataFrame(max_d_X_projected[:, 0:3], columns=[
-                                    'PC1', 'PC2', 'PC3']).reset_index(drop=True)
-        y_train_test_df = pd.DataFrame(
-            y_train_test, columns=['Class']).reset_index(drop=True)
-        # Concat it with target variable to create a complete Dataset
-        projected_data = pd.concat([principal_df, y_train_test_df], axis=1)
+    print(
+        f'd equals {max_d_accuracy+1}, plotting the projected data to the first 3 PCs')
+    # Creating a Pandas DataFrame of reduced Dataset
+    principal_df = pd.DataFrame(max_d_X_projected[:, 0:3], columns=[
+                                'PC1', 'PC2', 'PC3']).reset_index(drop=True)
+    y_train_test_df = pd.DataFrame(
+        y_train_test, columns=['Class']).reset_index(drop=True)
+    # Concat it with target variable to create a complete Dataset
+    projected_data = pd.concat([principal_df, y_train_test_df], axis=1)
 
-        # Plot
-        # Plot 3d graph for PC1, PC2 & PC3
-        fig = plt.figure(figsize=(10, 8))
-        ax = fig.add_subplot(111, projection='3d')
-        ax.view_init(15, -60)
-
-        scatter = ax.scatter(projected_data['PC1'], projected_data['PC2'], projected_data['PC3'],
-                             c=projected_data['Class'], alpha=0.6, label='Class')
-
-        # produce a legend with the unique colors from the scatter
-        legend1 = ax.legend(*scatter.legend_elements(),
-                            loc="lower left", title="Class")
-        ax.add_artist(legend1)
-
-        # chart
-        plt.title("Data projected on 3 PCs")
-        ax.set_xlabel('PC1')
-        ax.set_ylabel('PC2')
-        ax.set_zlabel('PC3')
-        plt.show()
-
-    else:
-        print(
-            f'd equals:{max_d_accuracy}, plotting the projected data to the first {max_d_accuracy} PCs')
-        # Creating a Pandas DataFrame of reduced Dataset
-        principal_df = pd.DataFrame(max_d_X_projected[:, 0:2], columns=[
-                                    'PC1', 'PC2']).reset_index(drop=True)
-        y_train_test_df = pd.DataFrame(
-            y_train_test, columns=['Class']).reset_index(drop=True)
-        # Concat it with target variable to create a complete Dataset
-        projected_data = pd.concat([principal_df, y_train_test_df], axis=1)
-
-        # Plot the 2d PC's
-        fig, ax = plt.subplots()
-        scatter = ax.scatter(
-            projected_data['PC1'], projected_data['PC2'], c=projected_data['Class'])
-        # produce a legend with the unique colors from the scatter
-        legend1 = ax.legend(*scatter.legend_elements(),
-                            loc="lower left", title="Classes")
-        ax.add_artist(legend1)
-        plt.show()
-
-    # Project the validation set into the top d PCs
-    X_val_normalized = (X_val-Mean_col)/Std_col
-    # Get the new projected data  pcaData = normalizedData * projectionVectors
-    X_val_projected = np.dot(X_val_normalized, max_d_eigenvectors)
-
-    model = KNeighborsClassifier(n_neighbors=3)
-    # StratifiedKFold CV is being done
-    scores = cross_val_score(
-        model, X_val_projected, y_val, scoring="accuracy", cv=5)
-    # we'll store the average value of accuracy calculated over all the 5 CV sets
-    accuracy_val = scores.mean()
-
-    # Plot the train and the validation toghether
+    # Plot
     # Plot 3d graph for PC1, PC2 & PC3
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection='3d')
     ax.view_init(15, -60)
 
     scatter = ax.scatter(projected_data['PC1'], projected_data['PC2'], projected_data['PC3'],
-                         c=projected_data['Class'], alpha=0.6, label='Class')
+                         c=projected_data['Class'], cmap="viridis", alpha=0.6, label='Class')
 
     # produce a legend with the unique colors from the scatter
     legend1 = ax.legend(*scatter.legend_elements(),
@@ -157,11 +106,44 @@ if __name__ == "__main__":
     ax.set_xlabel('PC1')
     ax.set_ylabel('PC2')
     ax.set_zlabel('PC3')
+    plt.show()
+
+    # Project the validation set into the top d PCs
+
+    # first normalize the validation
+    scaler = StandardScaler()
+    scaler.fit(X_train_test.values)
+    X_val_normalized = scaler.transform(X_val)
+    #X_val_normalized = (X_val-Mean_col)/Std_col
+    # Get the new projected data  pcaData = normalizedData * projectionVectors
+    X_val_projected = np.dot(X_val_normalized, max_d_eigenvectors)
+    accuracy_val = model.score(X_val_projected, y_val)
+
+    # Plot the train and the validation toghether
+    # Plot 3d graph for PC1, PC2 & PC3
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.view_init(15, -60)
+
+    scatter = ax.scatter(projected_data['PC1'], projected_data['PC2'], projected_data['PC3'],
+                         c=projected_data['Class'], cmap="viridis", alpha=0.6, label='Class')
+
+    # produce a legend with the unique colors from the scatter
+    legend1 = ax.legend(*scatter.legend_elements(),
+                        loc="lower left", title="Class")
+    ax.add_artist(legend1)
+
+    # chart
+    plt.title("Data projected on 3 PCs with validation data")
+    ax.set_xlabel('PC1')
+    ax.set_ylabel('PC2')
+    ax.set_zlabel('PC3')
 
     # Add the validation data points in black
     scatter = ax.scatter(
-        X_val_projected[:, 0], X_val_projected[:, 1], X_val_projected[:, 2], c='black', alpha=0.6)
-    legend2 = ax.legend(*scatter.legend_elements(), title="Validation")
+        X_val_projected[:, 0], X_val_projected[:, 1], X_val_projected[:, 2], color='black', alpha=0.6)
+    legend2 = ax.legend(*scatter.legend_elements(),
+                        title="Validation are black points")
     ax.add_artist(legend2)
 
     plt.show()
@@ -196,6 +178,7 @@ if __name__ == "__main__":
     plt.ylim(0, 1.1)
     plt.legend(loc='best')
     plt.tight_layout()
+    plt.title("Eigenvalues and comulative explained variance")
     plt.show()
 
     # PCA reconstruction=PC scores⋅Eigenvectors.T+Mean
@@ -205,7 +188,8 @@ if __name__ == "__main__":
     # Calculate reconstruction error
     rmse = sqrt(mean_squared_error(X_train_test, reconstructed_X))
     r2 = r2_score(X_train_test, reconstructed_X)
-
+    print(
+        f"r2 reconstruction error is: {r2} equals to cumulative explained variance")
     #####################################################
 
     fig = plt.figure(figsize=(10, 8))
@@ -231,7 +215,7 @@ if __name__ == "__main__":
     # Add xticks on the middle of the group bars
     plt.xticks(np.arange(len(eigenvectors[:, 1]))+1)
     plt.xlabel('group', fontweight='bold')
-
+    plt.title("The contribution of pc1,2,3,4 to the features")
     # Create legend & Show graphic
     plt.legend()
     plt.show()

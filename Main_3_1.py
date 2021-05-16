@@ -17,7 +17,7 @@ def myPca(X, num_components):
     Mean_col = np.mean(X, axis=0)
     Std_col = np.std(X, axis=0)
     # center columns by subtracting column means
-    #X_meaned = X - Mean_col
+    # X_meaned = X - Mean_col
     # calculate covariance matrix
     cov_mat = np.cov(X_normalized, rowvar=False)
 
@@ -36,8 +36,7 @@ def myPca(X, num_components):
     A_matrix = eigenvector_subset@D_matrix@eigenvector_subset.T
 
     # Get the new projected data  pcaData = normalizedData * projectionVectors
-    X_projected = np.dot(eigenvector_subset.transpose(),
-                         X_normalized.transpose()).transpose()
+    X_projected = np.dot(X_normalized, eigenvector_subset)
 
     return Mean_col, Std_col, X_normalized, eigenvalue_subset, eigenvector_subset, X_projected
 
