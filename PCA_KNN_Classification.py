@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 import seaborn as sns
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, cross_validate
 from Main_3_1 import myPca
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error
@@ -39,6 +39,7 @@ if __name__ == "__main__":
     Y = data["Class"]
 
     accuracy = []
+    models = []
     # Split the data into 10000 train+test & validation of 3611
     X_train_test, X_val, y_train_test, y_val = train_test_split(
         X, Y, train_size=0.7347, random_state=0)  # returns 10000 tuples for train+test and the rest is validation
@@ -48,8 +49,10 @@ if __name__ == "__main__":
 
         model = KNeighborsClassifier(n_neighbors=3)
         # StratifiedKFold CV is being done
-        scores = cross_val_score(
-            model, X_projected, y_train_test, scoring="accuracy", cv=5)
+        results = cross_validate(model, X_projected, y_train_test, scoring="accuracy",
+                                 cv=5, return_train_score=True, return_estimator=True)
+        """scores = cross_val_score(
+            model, X_projected, y_train_test, scoring="accuracy", cv=5)"""
         # we'll store the average value of accuracy calculated over all the 5 CV sets
         accuracy.append(scores.mean())
 
@@ -128,11 +131,12 @@ if __name__ == "__main__":
     # Get the new projected data  pcaData = normalizedData * projectionVectors
     X_val_projected = np.dot(X_val_normalized, max_d_eigenvectors)
 
-    #model = KNeighborsClassifier(n_neighbors=3)
-    ###
     model = KNeighborsClassifier(n_neighbors=3)
-    model.fit(max_d_X_projected,y_train_test)
-    val_acc = model.score(X_val_projected,y_val)
+    # StratifiedKFold CV is being done
+    scores = cross_val_score(
+        model, X_val_projected, y_val, scoring="accuracy", cv=5)
+    # we'll store the average value of accuracy calculated over all the 5 CV sets
+    accuracy_val = scores.mean()
 
     # Plot the train and the validation toghether
     # Plot 3d graph for PC1, PC2 & PC3
