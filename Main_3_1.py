@@ -2,13 +2,9 @@ import numpy as np
 import pandas as pd
 from sklearn.datasets import load_wine
 from sklearn.preprocessing import StandardScaler
-import seaborn as sb
+
 import matplotlib.pyplot as plt
 
-
-from mpl_toolkits.mplot3d import Axes3D
-from mpl_toolkits.mplot3d import proj3d
-from matplotlib.patches import FancyArrowPatch
 
 
 def myPca(X, num_components):
